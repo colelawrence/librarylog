@@ -1,12 +1,12 @@
 # librarylog
 
-A template for npm library with esbuild and TypeScript
+A logging library for libraries.
 
 ## Features
 
-✔ Node
+✔ Multiple levels based on audience. Public, Developers, Internal
 
-✔ Modern Browser
+✔ Colorful browser logs
 
 ✔ CommonJS
 
@@ -14,6 +14,6 @@ A template for npm library with esbuild and TypeScript
 
 ✔ TypeScript
 
-## Licence
+## License
 
 This project is licensed under the terms of the [MIT license](https://opensource.org/licenses/MIT).
