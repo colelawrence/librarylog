@@ -1,4 +1,4 @@
-# esbuild-typescript-library-template
+# librarylog
 
 A template for npm library with esbuild and TypeScript
 
