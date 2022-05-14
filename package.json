@@ -1,7 +1,7 @@
 {
   "name": "librarylog",
-  "version": "0.0.1",
-  "description": "A template for npm library with esbuild and TypeScript",
+  "version": "0.0.2",
+  "description": "A logger for libraries.",
   "main": "./dist/librarylog.cjs",
   "module": "./dist/librarylog.mjs",
   "types": "./dist/librarylog.d.ts",

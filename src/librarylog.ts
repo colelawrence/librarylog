@@ -127,7 +127,12 @@ export type ILibraryLogIncludes = {
 };
 
 export type ILibraryLoggingConfig = ILibraryLogIncludes & {
-  include?: (source: ILibraryLogSource) => ILibraryLogIncludes;
+  /**
+   * Override the level of logging on a per logger source basis.
+   * 
+   * Return `void` to indicate that the settings for the root logger should be used
+   */
+  include?: (source: ILibraryLogSource) => ILibraryLogIncludes | void;
   consoleStyle?: boolean;
 };
 
@@ -296,7 +301,7 @@ type InternalLoggerRef = {
     message: string,
     args?: LibraryLoggable | (() => LibraryLoggable)
   ) => void;
-  include: (obj: ILibraryLogSource) => ILibraryLogIncludes;
+  include: (obj: ILibraryLogSource) => ILibraryLogIncludes | void;
   create: (obj: ILibraryLogSource) => ILogger;
   creatExt: (obj: ILibraryLogSource) => ILibraryLogger;
   style: InternalLoggerStyleRef;
@@ -370,7 +375,7 @@ const DEFAULTS: InternalLoggerRef = {
   },
 };
 
-/** @internal */
+/** @public internal facing root logger */
 export type ILibraryInternalLogger = {
   configureLogger(config: ILibraryLoggerConfig): void;
   configureLogging(config: ILibraryLoggingConfig): void;
@@ -382,7 +387,7 @@ export type ILibraryInternalLoggerOptions = {
   _debug?: (message: string, args?: object) => void;
 };
 
-export function createLibraryInternalLogger(
+export function createLibraryLoggerProvider(
   useConsole: ILibraryConsoleLogger = console,
   // Not yet, used, but good pattern to have in case we want to log something
   // or report something interesting.
@@ -434,6 +439,11 @@ export function createLibraryInternalLogger(
     },
   };
 }
+
+// make things accessible on the default export
+createLibraryLoggerProvider.LibraryLoggerLevel = LibraryLoggerLevel
+
+export default createLibraryLoggerProvider;
 
 /** used by `configureLogger` for `'named'` */
 function configNamedToKeyed(

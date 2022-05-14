@@ -5,7 +5,7 @@ import type {
   IUtilLogger,
   ILogger,
 } from "..";
-import { createLibraryInternalLogger } from "../src/librarylog";
+import { createLibraryLoggerProvider } from "../src/librarylog";
 
 const DEBUG_LOGGER = false;
 
@@ -27,7 +27,7 @@ export function describeLogger(
 
 function setupFn(options: ILibraryInternalLoggerOptions) {
   const con = spyConsole();
-  const internal = createLibraryInternalLogger(con, options);
+  const internal = createLibraryLoggerProvider(con, options);
   function t(logger = internal.getLogger()) {
     return {
       expectExcluded(kind: keyof _LibraryLogFns) {
