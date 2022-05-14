@@ -73,6 +73,43 @@ appLogger.errorPublic("Something that just cannot go unnoticed!")
 appLogger.warnPublic("Something so so important!")
 ```
 
+### Lazy logging
+
+All log functions also come with a `.lazy.<logfn>(message, () => args)` version.
+```ts
+// execute the inner function only if the log is included in logging
+appLogger.lazy.debugDev("Page loaded", () => ({ pageId: "...", pageMeta: calculatePageMeta() }))
+```
+
+### Downgrading
+
+In many places in your code such as in utility functions, you don't know which
+audience the logs are for. So, in this case, you can use `.downgrade.<audience>()`
+to produce a `IUtilLogger` (which is also nameable).
+
+It looks like the following:
+```ts
+export interface IUtilLogger {
+  /** Usually equivalent to `console.error`. */
+  error(message: string, args?: LibraryLoggable): void;
+  /** Usually equivalent to `console.warn`. */
+  warn(message: string, args?: LibraryLoggable): void;
+  /** Usually equivalent to `console.info`. */
+  debug(message: string, args?: LibraryLoggable): void;
+  /** Usually equivalent to `console.debug`. */
+  trace(message: string, args?: LibraryLoggable): void;
+  named(name: string, key?: string): IUtilLogger;
+}
+```
+
+For example,
+```ts
+// now, any logs that `cssRenderHelpers` wants to surface, will go through
+// the `internal` audience.
+const cssLogger = appLogger.downgrade.internal()
+cssRenderHelpers.convertBezier(cssLogger, "...")
+```
+
 ### Configurable with a TypeScript API
 
 #### Configure what gets logged
