@@ -1,0 +1,39 @@
+{
+  "name": "esbuild-typescript-library-template",
+  "version": "0.0.1",
+  "description": "A template for npm library with esbuild and TypeScript",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.cjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && npm run build:mjs && npm run build:cjs",
+    "build:mjs": "esbuild src/index.ts --bundle --minify --format=esm --outfile=dist/index.mjs",
+    "build:cjs": "esbuild src/index.ts --bundle --minify --format=cjs --outfile=dist/index.cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silloi/esbuild-typescript-library-template.git"
+  },
+  "keywords": [
+    "esbuild",
+    "typescript",
+    "library"
+  ],
+  "author": "silloi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/silloi/esbuild-typescript-library-template/issues"
+  },
+  "homepage": "https://github.com/silloi/esbuild-typescript-library-template#readme",
+  "devDependencies": {
+    "esbuild": "^0.14.26",
+    "typescript": "^4.6.2"
+  }
+}
