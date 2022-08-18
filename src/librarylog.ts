@@ -80,25 +80,25 @@ export type ILibraryLoggerConfig =
   | /** default {@link console} */
   "console"
   | {
-      type: "console";
-      /** default `true` */
-      style?: boolean;
-      /** default {@link console} */
-      console?: ILibraryConsoleLogger;
-    }
+    type: "console";
+    /** default `true` */
+    style?: boolean;
+    /** default {@link console} */
+    console?: ILibraryConsoleLogger;
+  }
   | {
-      type: "named";
-      named(names: string[]): ILibraryLogger;
-    }
+    type: "named";
+    named(names: string[]): ILibraryLogger;
+  }
   | {
-      type: "keyed";
-      keyed(
-        nameAndKeys: {
-          name: string;
-          key?: string | number;
-        }[]
-      ): ILibraryLogger;
-    };
+    type: "keyed";
+    keyed(
+      nameAndKeys: {
+        name: string;
+        key?: string | number;
+      }[]
+    ): ILibraryLogger;
+  };
 
 export type ILibraryLogSource = {
   names: { name: string; key?: number | string }[];
@@ -168,21 +168,21 @@ export enum LibraryLoggerLevel {
 export enum _LoggerLevel {
   /** The highest logging level number. */
   ERROR_PUBLIC = LibraryLoggerLevel.ERROR |
-    _Audience.PUBLIC |
-    _Category.GENERAL,
+  _Audience.PUBLIC |
+  _Category.GENERAL,
   ERROR_DEV = LibraryLoggerLevel.ERROR | _Audience.DEV | _Category.GENERAL,
   /** @internal this was an unexpected event */
   _HMM = LibraryLoggerLevel.ERROR |
-    _Audience.INTERNAL |
-    _Category.TROUBLESHOOTING,
+  _Audience.INTERNAL |
+  _Category.TROUBLESHOOTING,
   _TODO = LibraryLoggerLevel.ERROR | _Audience.INTERNAL | _Category.TODO,
   _ERROR = LibraryLoggerLevel.ERROR | _Audience.INTERNAL | _Category.GENERAL,
   WARN_PUBLIC = LibraryLoggerLevel.WARN | _Audience.PUBLIC | _Category.GENERAL,
   WARN_DEV = LibraryLoggerLevel.WARN | _Audience.DEV | _Category.GENERAL,
   /** @internal surface this in this moment, but it probably shouldn't be left in the code after debugging. */
   _KAPOW = LibraryLoggerLevel.WARN |
-    _Audience.INTERNAL |
-    _Category.TROUBLESHOOTING,
+  _Audience.INTERNAL |
+  _Category.TROUBLESHOOTING,
   _WARN = LibraryLoggerLevel.WARN | _Audience.INTERNAL | _Category.GENERAL,
   DEBUG_DEV = LibraryLoggerLevel.DEBUG | _Audience.DEV | _Category.GENERAL,
   /** @internal debug logs for implementation details */
@@ -217,13 +217,13 @@ function getLogMeta(level: _LoggerLevel): ILibraryLogMeta {
     audience: hasFlag(level, _Audience.INTERNAL)
       ? "internal"
       : hasFlag(level, _Audience.DEV)
-      ? "dev"
-      : "public",
+        ? "dev"
+        : "public",
     category: hasFlag(level, _Category.TROUBLESHOOTING)
       ? "troubleshooting"
       : hasFlag(level, _Category.TODO)
-      ? "todo"
-      : "general",
+        ? "todo"
+        : "general",
     level:
       // I think this is equivalent... but I'm not using it until we have tests.
       // this code won't really impact performance much anyway, since it's just computed once
@@ -236,11 +236,11 @@ function getLogMeta(level: _LoggerLevel): ILibraryLogMeta {
       hasFlag(level, LibraryLoggerLevel.ERROR)
         ? LibraryLoggerLevel.ERROR
         : hasFlag(level, LibraryLoggerLevel.WARN)
-        ? LibraryLoggerLevel.WARN
-        : hasFlag(level, LibraryLoggerLevel.DEBUG)
-        ? LibraryLoggerLevel.DEBUG
-        : // no other option
-          LibraryLoggerLevel.TRACE,
+          ? LibraryLoggerLevel.WARN
+          : hasFlag(level, LibraryLoggerLevel.DEBUG)
+            ? LibraryLoggerLevel.DEBUG
+            : // no other option
+            LibraryLoggerLevel.TRACE,
   });
 }
 
@@ -272,13 +272,14 @@ function shouldLog(
     ((level & _Audience.PUBLIC) === _Audience.PUBLIC
       ? true
       : (level & _Audience.DEV) === _Audience.DEV
-      ? includes.dev
-      : (level & _Audience.INTERNAL) === _Audience.INTERNAL
-      ? includes.internal
-      : false) && includes.min <= level
+        ? includes.dev
+        : (level & _Audience.INTERNAL) === _Audience.INTERNAL
+          ? includes.internal
+          : false) && includes.min <= level
   );
 }
 
+/** @internal */ 
 export { shouldLog as _loggerShouldLog };
 
 type InternalLoggerStyleRef = {
@@ -321,7 +322,7 @@ const DEFAULTS: InternalLoggerRef = {
     dev: false,
     min: LibraryLoggerLevel.WARN,
   }),
-  filtered: function defaultFiltered() {},
+  filtered: function defaultFiltered() { },
   include: function defaultInclude() {
     return {};
   },
@@ -357,12 +358,10 @@ const DEFAULTS: InternalLoggerRef = {
     css(this, name): string {
       const found = this.cssMemo.get(name);
       if (found) return found;
-      let css = `color:${
-        this.color?.(name) ??
-        `hsl(${
-          (name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % 360
+      let css = `color:${this.color?.(name) ??
+        `hsl(${(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % 360
         }, 100%, 60%)`
-      }`;
+        }`;
       if (this.bold?.test(name)) {
         css += ";font-weight:600";
       }

@@ -1,6 +1,6 @@
 {
   "name": "librarylog",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "A logger for libraries.",
   "main": "./dist/librarylog.cjs",
   "module": "./dist/librarylog.mjs",
@@ -18,7 +18,8 @@
     "ts-jest": "ts-jest",
     "build": "tsc && npm run build:mjs && npm run build:cjs",
     "build:mjs": "esbuild src/librarylog.ts --bundle --keep-names --minify --format=esm --outfile=dist/librarylog.mjs",
-    "build:cjs": "esbuild src/librarylog.ts --bundle --keep-names --minify --format=cjs --outfile=dist/librarylog.cjs"
+    "build:cjs": "esbuild src/librarylog.ts --bundle --keep-names --minify --format=cjs --outfile=dist/librarylog.cjs",
+    "prepack": "npm run build"
   },
   "repository": {
     "type": "git",
