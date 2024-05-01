@@ -4,7 +4,7 @@ import { createLibraryLoggerProvider } from "..";
 const logger = createLibraryLoggerProvider();
 
 // set custom logging behaviors (filtering and such)
-logger.configureLogging({
+logger.configureFiltering({
   // disable style to the console (if the logger does not support style, this won't have an effect)
   consoleStyle: false,
   // include logs made for the dev audience

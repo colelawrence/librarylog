@@ -4,7 +4,7 @@ import { createLibraryLoggerProvider, LibraryLoggerLevel } from "..";
 const logger = createLibraryLoggerProvider();
 
 // set a custom console
-logger.configureLogger({
+logger.configureConsole({
   type: "console",
   console: console,
   // disable colorful styling
@@ -12,13 +12,13 @@ logger.configureLogger({
 });
 
 // disable console styling, and set default console
-logger.configureLogger({
+logger.configureConsole({
   type: "console",
   style: false,
 });
 
 // set your own keyed logger
-logger.configureLogger({
+logger.configureConsole({
   type: "keyed",
   keyed(nameAndKeys) {
     const prefix = nameAndKeys
@@ -70,7 +70,7 @@ logger.configureLogger({
 });
 
 // or set your own named logger
-logger.configureLogger({
+logger.configureConsole({
   type: "named",
   named(names) {
     // named loggers do not have a separate "key" option.

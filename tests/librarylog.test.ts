@@ -35,7 +35,7 @@ describeLogger("Library internal logger", (setup) => {
 
       const initial = h.t();
 
-      h.internal.configureLogging({
+      h.internal.configureFiltering({
         dev: true,
         internal: true,
         min: LibraryLoggerLevel.TRACE,
@@ -62,7 +62,7 @@ describeLogger("Library internal logger", (setup) => {
     test("it can include WARN level dev and internal logs", () => {
       const h = setup();
 
-      h.internal.configureLogging({
+      h.internal.configureFiltering({
         dev: true,
         internal: true,
         min: LibraryLoggerLevel.WARN,
@@ -84,7 +84,7 @@ describeLogger("Library internal logger", (setup) => {
     test("it can include WARN level dev logs", () => {
       const h = setup();
 
-      h.internal.configureLogging({
+      h.internal.configureFiltering({
         dev: true,
         min: LibraryLoggerLevel.WARN,
       });
@@ -133,21 +133,9 @@ describeLogger("Library internal logger", (setup) => {
       t.expectIncluded("warnPublic", "warn", ["color:", "Test1"]);
     });
 
-    test("consoleStyle: false with name does not have color", () => {
-      const h = setup();
-      h.internal.configureLogging({
-        consoleStyle: false,
-      });
-
-      const t = h.t().named("Test1");
-
-      t.expectIncluded("errorPublic", "error", [{ not: "color:" }, "Test1"]);
-      t.expectIncluded("warnPublic", "warn", [{ not: "color:" }, "Test1"]);
-    });
-
     test("console style: false with name does not have color", () => {
       const h = setup();
-      h.internal.configureLogger({
+      h.internal.configureConsole({
         type: "console",
         console: h.con,
         style: false,
@@ -196,7 +184,7 @@ describeLogger("Library internal logger", (setup) => {
     test(".downgrade.internal() can be named", () => {
       const h = setup();
 
-      h.internal.configureLogging({
+      h.internal.configureFiltering({
         internal: true,
         min: LibraryLoggerLevel.TRACE,
       });
@@ -218,7 +206,7 @@ describeLogger("Library internal logger", (setup) => {
     test(".downgrade.public() debug/trace warns internal", () => {
       const h = setup();
       {
-        h.internal.configureLogging({
+        h.internal.configureFiltering({
           internal: true,
         });
         const publ = h.t().downgrade.public();
@@ -232,7 +220,7 @@ describeLogger("Library internal logger", (setup) => {
       }
 
       {
-        h.internal.configureLogging({
+        h.internal.configureFiltering({
           dev: true,
         });
         const publ = h.t().downgrade.public();

@@ -76,29 +76,29 @@ export interface ILogger extends _LibraryLogFns {
   };
 }
 
-export type ILibraryLoggerConfig =
+export type ILibraryConsoleOutConfig =
   | /** default {@link console} */
   "console"
   | {
-    type: "console";
-    /** default `true` */
-    style?: boolean;
-    /** default {@link console} */
-    console?: ILibraryConsoleLogger;
-  }
+      type: "console";
+      /** default `true` */
+      style?: boolean;
+      /** default {@link console} */
+      console?: ILibraryConsoleLogger;
+    }
   | {
-    type: "named";
-    named(names: string[]): ILibraryLogger;
-  }
+      type: "named";
+      named(names: string[]): ILibraryLogger;
+    }
   | {
-    type: "keyed";
-    keyed(
-      nameAndKeys: {
-        name: string;
-        key?: string | number;
-      }[]
-    ): ILibraryLogger;
-  };
+      type: "keyed";
+      keyed(
+        nameAndKeys: {
+          name: string;
+          key?: string | number;
+        }[]
+      ): ILibraryLogger;
+    };
 
 export type ILibraryLogSource = {
   names: { name: string; key?: number | string }[];
@@ -126,14 +126,13 @@ export type ILibraryLogIncludes = {
   internal?: boolean;
 };
 
-export type ILibraryLoggingConfig = ILibraryLogIncludes & {
+export type ILibraryFilteringConfig = ILibraryLogIncludes & {
   /**
    * Override the level of logging on a per logger source basis.
-   * 
+   *
    * Return `void` to indicate that the settings for the root logger should be used
    */
   include?: (source: ILibraryLogSource) => ILibraryLogIncludes | void;
-  consoleStyle?: boolean;
 };
 
 /** @internal */
@@ -167,22 +166,16 @@ export enum LibraryLoggerLevel {
  */
 export enum _LoggerLevel {
   /** The highest logging level number. */
-  ERROR_PUBLIC = LibraryLoggerLevel.ERROR |
-  _Audience.PUBLIC |
-  _Category.GENERAL,
+  ERROR_PUBLIC = LibraryLoggerLevel.ERROR | _Audience.PUBLIC | _Category.GENERAL,
   ERROR_DEV = LibraryLoggerLevel.ERROR | _Audience.DEV | _Category.GENERAL,
   /** @internal this was an unexpected event */
-  _HMM = LibraryLoggerLevel.ERROR |
-  _Audience.INTERNAL |
-  _Category.TROUBLESHOOTING,
+  _HMM = LibraryLoggerLevel.ERROR | _Audience.INTERNAL | _Category.TROUBLESHOOTING,
   _TODO = LibraryLoggerLevel.ERROR | _Audience.INTERNAL | _Category.TODO,
   _ERROR = LibraryLoggerLevel.ERROR | _Audience.INTERNAL | _Category.GENERAL,
   WARN_PUBLIC = LibraryLoggerLevel.WARN | _Audience.PUBLIC | _Category.GENERAL,
   WARN_DEV = LibraryLoggerLevel.WARN | _Audience.DEV | _Category.GENERAL,
   /** @internal surface this in this moment, but it probably shouldn't be left in the code after debugging. */
-  _KAPOW = LibraryLoggerLevel.WARN |
-  _Audience.INTERNAL |
-  _Category.TROUBLESHOOTING,
+  _KAPOW = LibraryLoggerLevel.WARN | _Audience.INTERNAL | _Category.TROUBLESHOOTING,
   _WARN = LibraryLoggerLevel.WARN | _Audience.INTERNAL | _Category.GENERAL,
   DEBUG_DEV = LibraryLoggerLevel.DEBUG | _Audience.DEV | _Category.GENERAL,
   /** @internal debug logs for implementation details */
@@ -214,16 +207,12 @@ const LEVELS = {
 
 function getLogMeta(level: _LoggerLevel): ILibraryLogMeta {
   return Object.freeze({
-    audience: hasFlag(level, _Audience.INTERNAL)
-      ? "internal"
-      : hasFlag(level, _Audience.DEV)
-        ? "dev"
-        : "public",
+    audience: hasFlag(level, _Audience.INTERNAL) ? "internal" : hasFlag(level, _Audience.DEV) ? "dev" : "public",
     category: hasFlag(level, _Category.TROUBLESHOOTING)
       ? "troubleshooting"
       : hasFlag(level, _Category.TODO)
-        ? "todo"
-        : "general",
+      ? "todo"
+      : "general",
     level:
       // I think this is equivalent... but I'm not using it until we have tests.
       // this code won't really impact performance much anyway, since it's just computed once
@@ -236,11 +225,11 @@ function getLogMeta(level: _LoggerLevel): ILibraryLogMeta {
       hasFlag(level, LibraryLoggerLevel.ERROR)
         ? LibraryLoggerLevel.ERROR
         : hasFlag(level, LibraryLoggerLevel.WARN)
-          ? LibraryLoggerLevel.WARN
-          : hasFlag(level, LibraryLoggerLevel.DEBUG)
-            ? LibraryLoggerLevel.DEBUG
-            : // no other option
-            LibraryLoggerLevel.TRACE,
+        ? LibraryLoggerLevel.WARN
+        : hasFlag(level, LibraryLoggerLevel.DEBUG)
+        ? LibraryLoggerLevel.DEBUG
+        : // no other option
+          LibraryLoggerLevel.TRACE,
   });
 }
 
@@ -264,22 +253,19 @@ function hasFlag(level: _LoggerLevel, flag: number): boolean {
  * NOTE: Keep this in the same file as {@link _Audience} to ensure basic compilers
  * can inline the enum values.
  */
-function shouldLog(
-  includes: Required<ILibraryLogIncludes>,
-  level: _LoggerLevel
-) {
+function shouldLog(includes: Required<ILibraryLogIncludes>, level: _LoggerLevel) {
   return (
     ((level & _Audience.PUBLIC) === _Audience.PUBLIC
       ? true
       : (level & _Audience.DEV) === _Audience.DEV
-        ? includes.dev
-        : (level & _Audience.INTERNAL) === _Audience.INTERNAL
-          ? includes.internal
-          : false) && includes.min <= level
+      ? includes.dev
+      : (level & _Audience.INTERNAL) === _Audience.INTERNAL
+      ? includes.internal
+      : false) && includes.min <= level
   );
 }
 
-/** @internal */ 
+/** @internal */
 export { shouldLog as _loggerShouldLog };
 
 type InternalLoggerStyleRef = {
@@ -293,8 +279,7 @@ type InternalLoggerStyleRef = {
 };
 
 type InternalLoggerRef = {
-  loggingConsoleStyle: boolean;
-  loggerConsoleStyle: boolean;
+  consoleStyle: boolean;
   includes: Required<ILibraryLogIncludes>;
   filtered: (
     this: ILibraryLogSource,
@@ -306,23 +291,17 @@ type InternalLoggerRef = {
   create: (obj: ILibraryLogSource) => ILogger;
   creatExt: (obj: ILibraryLogSource) => ILibraryLogger;
   style: InternalLoggerStyleRef;
-  named(
-    this: InternalLoggerRef,
-    parent: ILibraryLogSource,
-    name: string,
-    key?: number | string
-  ): ILogger;
+  named(this: InternalLoggerRef, parent: ILibraryLogSource, name: string, key?: number | string): ILogger;
 };
 
 const DEFAULTS: InternalLoggerRef = {
-  loggingConsoleStyle: true,
-  loggerConsoleStyle: true,
+  consoleStyle: true,
   includes: Object.freeze({
     internal: false,
     dev: false,
     min: LibraryLoggerLevel.WARN,
   }),
-  filtered: function defaultFiltered() { },
+  filtered: function defaultFiltered() {},
   include: function defaultInclude() {
     return {};
   },
@@ -358,10 +337,9 @@ const DEFAULTS: InternalLoggerRef = {
     css(this, name): string {
       const found = this.cssMemo.get(name);
       if (found) return found;
-      let css = `color:${this.color?.(name) ??
-        `hsl(${(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % 360
-        }, 100%, 60%)`
-        }`;
+      let css = `color:${
+        this.color?.(name) ?? `hsl(${(name.charCodeAt(0) + name.charCodeAt(name.length - 1)) % 360}, 100%, 60%)`
+      }`;
       if (this.bold?.test(name)) {
         css += ";font-weight:600";
       }
@@ -376,8 +354,8 @@ const DEFAULTS: InternalLoggerRef = {
 
 /** @public internal facing root logger */
 export type ILibraryInternalLogger = {
-  configureLogger(config: ILibraryLoggerConfig): void;
-  configureLogging(config: ILibraryLoggingConfig): void;
+  configureConsole(config: ILibraryConsoleOutConfig): void;
+  configureFiltering(config: ILibraryFilteringConfig): void;
   getLogger(): ILogger;
 };
 
@@ -402,19 +380,17 @@ export function createLibraryLoggerProvider(
   };
   const createExtBound = createExtLogger.bind(ref);
   function getConCreate() {
-    return ref.loggingConsoleStyle && ref.loggerConsoleStyle
-      ? createConsole.styled
-      : createConsole.noStyle;
+    return ref.consoleStyle ? createConsole.styled : createConsole.noStyle;
   }
   ref.create = getConCreate();
 
   return {
-    configureLogger(config) {
+    configureConsole(config) {
       if (config === "console") {
-        ref.loggerConsoleStyle = DEFAULTS.loggerConsoleStyle;
+        ref.consoleStyle = DEFAULTS.consoleStyle;
         ref.create = getConCreate();
       } else if (config.type === "console") {
-        ref.loggerConsoleStyle = config.style ?? DEFAULTS.loggerConsoleStyle;
+        ref.consoleStyle = config.style ?? DEFAULTS.consoleStyle;
         ref.create = getConCreate();
       } else if (config.type === "keyed") {
         ref.creatExt = (source) => config.keyed(source.names);
@@ -424,13 +400,11 @@ export function createLibraryLoggerProvider(
         ref.create = createExtBound;
       }
     },
-    configureLogging(config) {
+    configureFiltering(config) {
       ref.includes.dev = config.dev ?? DEFAULTS.includes.dev;
       ref.includes.internal = config.internal ?? DEFAULTS.includes.internal;
       ref.includes.min = config.min ?? DEFAULTS.includes.min;
       ref.include = config.include ?? DEFAULTS.include;
-      ref.loggingConsoleStyle =
-        config.consoleStyle ?? DEFAULTS.loggingConsoleStyle;
       ref.create = getConCreate();
     },
     getLogger() {
@@ -440,15 +414,12 @@ export function createLibraryLoggerProvider(
 }
 
 // make things accessible on the default export
-createLibraryLoggerProvider.LibraryLoggerLevel = LibraryLoggerLevel
+createLibraryLoggerProvider.LibraryLoggerLevel = LibraryLoggerLevel;
 
 export default createLibraryLoggerProvider;
 
-/** used by `configureLogger` for `'named'` */
-function configNamedToKeyed(
-  namedFn: (names: string[]) => ILibraryLogger,
-  source: ILibraryLogSource
-): ILibraryLogger {
+/** used by `configureConsole` for `'named'` */
+function configNamedToKeyed(namedFn: (names: string[]) => ILibraryLogger, source: ILibraryLogSource): ILibraryLogger {
   const names: string[] = [];
   for (let { name, key } of source.names) {
     names.push(key == null ? name : `${name} (${key})`);
@@ -456,10 +427,7 @@ function configNamedToKeyed(
   return namedFn(names);
 }
 
-function createExtLogger(
-  this: InternalLoggerRef,
-  source: ILibraryLogSource
-): ILogger {
+function createExtLogger(this: InternalLoggerRef, source: ILibraryLogSource): ILogger {
   const includes = { ...this.includes, ...this.include(source) };
   const f = this.filtered;
   const named = this.named.bind(this, source);
@@ -478,45 +446,21 @@ function createExtLogger(
   const DEBUG_DEV = shouldLog(includes, _LoggerLevel.DEBUG_DEV);
   const _TRACE = shouldLog(includes, _LoggerLevel._TRACE);
   const TRACE_DEV = shouldLog(includes, _LoggerLevel.TRACE_DEV);
-  const _hmm = _HMM
-    ? ext.error.bind(ext, LEVELS._hmm)
-    : f.bind(source, _LoggerLevel._HMM);
-  const _todo = _TODO
-    ? ext.error.bind(ext, LEVELS._todo)
-    : f.bind(source, _LoggerLevel._TODO);
-  const _error = _ERROR
-    ? ext.error.bind(ext, LEVELS._error)
-    : f.bind(source, _LoggerLevel._ERROR);
-  const errorDev = ERROR_DEV
-    ? ext.error.bind(ext, LEVELS.errorDev)
-    : f.bind(source, _LoggerLevel.ERROR_DEV);
+  const _hmm = _HMM ? ext.error.bind(ext, LEVELS._hmm) : f.bind(source, _LoggerLevel._HMM);
+  const _todo = _TODO ? ext.error.bind(ext, LEVELS._todo) : f.bind(source, _LoggerLevel._TODO);
+  const _error = _ERROR ? ext.error.bind(ext, LEVELS._error) : f.bind(source, _LoggerLevel._ERROR);
+  const errorDev = ERROR_DEV ? ext.error.bind(ext, LEVELS.errorDev) : f.bind(source, _LoggerLevel.ERROR_DEV);
   const errorPublic = ERROR_PUBLIC
     ? ext.error.bind(ext, LEVELS.errorPublic)
     : f.bind(source, _LoggerLevel.ERROR_PUBLIC);
-  const _kapow = _KAPOW
-    ? ext.warn.bind(ext, LEVELS._kapow)
-    : f.bind(source, _LoggerLevel._KAPOW);
-  const _warn = _WARN
-    ? ext.warn.bind(ext, LEVELS._warn)
-    : f.bind(source, _LoggerLevel._WARN);
-  const warnDev = WARN_DEV
-    ? ext.warn.bind(ext, LEVELS.warnDev)
-    : f.bind(source, _LoggerLevel.WARN_DEV);
-  const warnPublic = WARN_PUBLIC
-    ? ext.warn.bind(ext, LEVELS.warnPublic)
-    : f.bind(source, _LoggerLevel.WARN_DEV);
-  const _debug = _DEBUG
-    ? ext.debug.bind(ext, LEVELS._debug)
-    : f.bind(source, _LoggerLevel._DEBUG);
-  const debugDev = DEBUG_DEV
-    ? ext.debug.bind(ext, LEVELS.debugDev)
-    : f.bind(source, _LoggerLevel.DEBUG_DEV);
-  const _trace = _TRACE
-    ? ext.trace.bind(ext, LEVELS._trace)
-    : f.bind(source, _LoggerLevel._TRACE);
-  const traceDev = TRACE_DEV
-    ? ext.trace.bind(ext, LEVELS.traceDev)
-    : f.bind(source, _LoggerLevel.TRACE_DEV);
+  const _kapow = _KAPOW ? ext.warn.bind(ext, LEVELS._kapow) : f.bind(source, _LoggerLevel._KAPOW);
+  const _warn = _WARN ? ext.warn.bind(ext, LEVELS._warn) : f.bind(source, _LoggerLevel._WARN);
+  const warnDev = WARN_DEV ? ext.warn.bind(ext, LEVELS.warnDev) : f.bind(source, _LoggerLevel.WARN_DEV);
+  const warnPublic = WARN_PUBLIC ? ext.warn.bind(ext, LEVELS.warnPublic) : f.bind(source, _LoggerLevel.WARN_DEV);
+  const _debug = _DEBUG ? ext.debug.bind(ext, LEVELS._debug) : f.bind(source, _LoggerLevel._DEBUG);
+  const debugDev = DEBUG_DEV ? ext.debug.bind(ext, LEVELS.debugDev) : f.bind(source, _LoggerLevel.DEBUG_DEV);
+  const _trace = _TRACE ? ext.trace.bind(ext, LEVELS._trace) : f.bind(source, _LoggerLevel._TRACE);
+  const traceDev = TRACE_DEV ? ext.trace.bind(ext, LEVELS.traceDev) : f.bind(source, _LoggerLevel.TRACE_DEV);
   const logger: ILogger = {
     _hmm,
     _todo,
@@ -615,15 +559,7 @@ function createConsoleLoggerStyled(
   const f = this.filtered;
   const named = this.named.bind(this, source);
   const prefixArr = [prefix, ...styleArgs];
-  return _createConsoleLogger(
-    f,
-    source,
-    includes,
-    con,
-    prefixArr,
-    styledKapowPrefix(prefixArr),
-    named
-  );
+  return _createConsoleLogger(f, source, includes, con, prefixArr, styledKapowPrefix(prefixArr), named);
 }
 
 function styledKapowPrefix(args: ReadonlyArray<string>): ReadonlyArray<string> {
@@ -653,25 +589,12 @@ function createConsoleLoggerNoStyle(
   const f = this.filtered;
   const named = this.named.bind(this, source);
   const prefixArr = [prefix];
-  return _createConsoleLogger(
-    f,
-    source,
-    includes,
-    con,
-    prefixArr,
-    prefixArr,
-    named
-  );
+  return _createConsoleLogger(f, source, includes, con, prefixArr, prefixArr, named);
 }
 
 /** Used by {@link createConsoleLoggerNoStyle} and {@link createConsoleLoggerStyled} */
 function _createConsoleLogger(
-  f: (
-    this: ILibraryLogSource,
-    level: _LoggerLevel,
-    message: string,
-    args?: object | undefined
-  ) => void,
+  f: (this: ILibraryLogSource, level: _LoggerLevel, message: string, args?: object | undefined) => void,
   source: ILibraryLogSource,
   includes: { min: LibraryLoggerLevel; dev: boolean; internal: boolean },
   con: ILibraryConsoleLogger,
@@ -692,45 +615,19 @@ function _createConsoleLogger(
   const DEBUG_DEV = shouldLog(includes, _LoggerLevel.DEBUG_DEV);
   const _TRACE = shouldLog(includes, _LoggerLevel._TRACE);
   const TRACE_DEV = shouldLog(includes, _LoggerLevel.TRACE_DEV);
-  const _hmm = _HMM
-    ? con.error.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._HMM);
-  const _todo = _TODO
-    ? con.error.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._TODO);
-  const _error = _ERROR
-    ? con.error.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._ERROR);
-  const errorDev = ERROR_DEV
-    ? con.error.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.ERROR_DEV);
-  const errorPublic = ERROR_PUBLIC
-    ? con.error.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.ERROR_PUBLIC);
-  const _kapow = _KAPOW
-    ? con.warn.bind(con, ...kapowPrefix)
-    : f.bind(source, _LoggerLevel._KAPOW);
-  const _warn = _WARN
-    ? con.warn.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._WARN);
-  const warnDev = WARN_DEV
-    ? con.warn.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.WARN_DEV);
-  const warnPublic = WARN_PUBLIC
-    ? con.warn.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.WARN_DEV);
-  const _debug = _DEBUG
-    ? con.info.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._DEBUG);
-  const debugDev = DEBUG_DEV
-    ? con.info.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.DEBUG_DEV);
-  const _trace = _TRACE
-    ? con.debug.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel._TRACE);
-  const traceDev = TRACE_DEV
-    ? con.debug.bind(con, ...prefix)
-    : f.bind(source, _LoggerLevel.TRACE_DEV);
+  const _hmm = _HMM ? con.error.bind(con, ...prefix) : f.bind(source, _LoggerLevel._HMM);
+  const _todo = _TODO ? con.error.bind(con, ...prefix) : f.bind(source, _LoggerLevel._TODO);
+  const _error = _ERROR ? con.error.bind(con, ...prefix) : f.bind(source, _LoggerLevel._ERROR);
+  const errorDev = ERROR_DEV ? con.error.bind(con, ...prefix) : f.bind(source, _LoggerLevel.ERROR_DEV);
+  const errorPublic = ERROR_PUBLIC ? con.error.bind(con, ...prefix) : f.bind(source, _LoggerLevel.ERROR_PUBLIC);
+  const _kapow = _KAPOW ? con.warn.bind(con, ...kapowPrefix) : f.bind(source, _LoggerLevel._KAPOW);
+  const _warn = _WARN ? con.warn.bind(con, ...prefix) : f.bind(source, _LoggerLevel._WARN);
+  const warnDev = WARN_DEV ? con.warn.bind(con, ...prefix) : f.bind(source, _LoggerLevel.WARN_DEV);
+  const warnPublic = WARN_PUBLIC ? con.warn.bind(con, ...prefix) : f.bind(source, _LoggerLevel.WARN_DEV);
+  const _debug = _DEBUG ? con.info.bind(con, ...prefix) : f.bind(source, _LoggerLevel._DEBUG);
+  const debugDev = DEBUG_DEV ? con.info.bind(con, ...prefix) : f.bind(source, _LoggerLevel.DEBUG_DEV);
+  const _trace = _TRACE ? con.debug.bind(con, ...prefix) : f.bind(source, _LoggerLevel._TRACE);
+  const traceDev = TRACE_DEV ? con.debug.bind(con, ...prefix) : f.bind(source, _LoggerLevel.TRACE_DEV);
   const logger: ILogger = {
     _hmm,
     _todo,

@@ -121,7 +121,7 @@ import { createLibraryLoggerProvider } from "librarylog";
 const provider = createLibraryLoggerProvider();
 
 // set custom logging behaviors (filtering and such)
-provider.configureLogging({
+provider.configureFiltering({
   // disable style to the console (if the logger does not support style, this won't have an effect)
   consoleStyle: false,
   // include logs made for the dev audience
@@ -168,7 +168,7 @@ import { createLibraryLoggerProvider, LibraryLoggerLevel } from "librarylog";
 const logger = createLibraryLoggerProvider();
 
 // set a custom console
-logger.configureLogger({
+logger.configureConsole({
   type: "console",
   console: console,
   // disable colorful styling
@@ -176,13 +176,13 @@ logger.configureLogger({
 });
 
 // disable console styling, and set default console
-logger.configureLogger({
+logger.configureConsole({
   type: "console",
   style: false,
 });
 
 // set your own keyed logger
-logger.configureLogger({
+logger.configureConsole({
   type: "keyed",
   keyed(nameAndKeys) {
     const prefix = nameAndKeys
